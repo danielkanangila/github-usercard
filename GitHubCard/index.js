@@ -122,15 +122,22 @@ async function findFriends(followers_url) {
     friends.push(friend.data)
   }
 
+  // add follower's followers if own followers are less than 5
   if (friends.length < 5) {
-    const follewersBis = []
+    let followersBisUrls = []
     for (let a=0; a < friends.length; a++) {
       if (friends[a].followers > 0) {
         let url = await fetchData(friends[a].followers_url)
         url = url.data.map(f => f.url)
-        follewersBis.push(url);
-        console.log(a)
+        followersBisUrls.push(url);
       }
+    }
+
+    followersBisUrls = [].concat.apply([], followersBisUrls);
+    
+    for(let i=0; i < followersBisUrls.length; i++) {
+      const friend = await fetchData(followersBisUrls[i]);
+      friends.push(friend.data)
     }
     
   }
