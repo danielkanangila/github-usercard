@@ -55,6 +55,7 @@ const followersArray = [];
 */
 const html = String.raw;
 const base_url = 'https://api.github.com/users/danielkanangila';
+const domParser = new DOMParser();
 
 /**
  * Fetch data from given url
@@ -85,7 +86,6 @@ async function fetchData(url) {
  * @returns gitHubCard html component 
  */
 function gitHubCard({login, avatar_url, name, location, html_url, followers, following, bio}) {
-  const parser = new DOMParser();
   const template = html`
     <div class="card">
       <img src=${avatar_url} />
@@ -102,7 +102,7 @@ function gitHubCard({login, avatar_url, name, location, html_url, followers, fol
       </div>
     </div>
   `
-  return parser.parseFromString(template, 'text/html').body.firstChild;
+  return domParser.parseFromString(template, 'text/html').body.firstChild;
 }
 
 /**
@@ -128,7 +128,8 @@ async function findFriends(followers_url) {
     for (let a=0; a < friends.length; a++) {
       if (friends[a].followers > 0) {
         let url = await fetchData(friends[a].followers_url)
-        url = url.data.map(f => f.url)
+        url = url.data.map(f => f.url);
+        url = url.filter(u => u !== base_url);
         followersBisUrls.push(url);
       }
     }
@@ -153,16 +154,21 @@ async function addCardsToDOM() {
   const friends = await findFriends(user.data.followers_url);
 
   const userCard = gitHubCard({...user.data});
+
   const followerCards = [];
 
-  friends.forEach(data => {
+  friends.forEach((data, index) => {
     followerCards.push(gitHubCard({...data}));
   });
 
+
   const cards = document.querySelector('.cards');
   cards.appendChild(userCard);
+
+
   followerCards.forEach(el => cards.appendChild(el));
 }
 
-addCardsToDOM();
 
+addCardsToDOM()
+new GitHubCalendar(".graph-container", "danielkanangila");
