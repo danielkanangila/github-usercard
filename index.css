@@ -136,3 +136,8 @@ body {
 .js-calendar-graph-svg {
   width: 100%;
 }
+
+.title {
+  font-size: 30px;
+  margin-bottom: 20px;
+}

@@ -146,6 +146,11 @@ async function findFriends(followers_url) {
   return friends;
 }
 
+function titleH2(title) {
+  return domParser.parseFromString(`<h2 class="title">${title}</h2>`, 'text/html')
+    .body.firstChild;
+}
+
 /**
  * Add created card to the dom
  */
@@ -164,9 +169,13 @@ async function addCardsToDOM() {
 
   const cards = document.querySelector('.cards');
   cards.appendChild(userCard);
+  cards.appendChild(titleH2('Followers'));
 
-
-  followerCards.forEach(el => cards.appendChild(el));
+  followerCards.forEach((el, index) => {
+    cards.appendChild(el)
+    if (index == 2)
+      cards.appendChild(titleH2('Your followers are follow by:'));
+  });
 }
 
 
