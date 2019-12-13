@@ -85,7 +85,7 @@ async function fetchData(url) {
  * bio } 
  * @returns gitHubCard html component 
  */
-function gitHubCard({login, avatar_url, name, location, html_url, followers, following, bio}) {
+function GitHubCard({login, avatar_url, name, location, html_url, followers, following, bio}) {
   const template = html`
     <div class="card">
       <img src=${avatar_url} />
@@ -146,7 +146,7 @@ async function findFriends(followers_url) {
   return friends;
 }
 
-function titleH2(title) {
+function TitleH2(title) {
   return domParser.parseFromString(`<h2 class="title">${title}</h2>`, 'text/html')
     .body.firstChild;
 }
@@ -158,23 +158,23 @@ async function addCardsToDOM() {
   const user = await fetchData(base_url);
   const friends = await findFriends(user.data.followers_url);
 
-  const userCard = gitHubCard({...user.data});
+  const userCard = GitHubCard({...user.data});
 
   const followerCards = [];
 
   friends.forEach((data, index) => {
-    followerCards.push(gitHubCard({...data}));
+    followerCards.push(GitHubCard({...data}));
   });
 
 
   const cards = document.querySelector('.cards');
   cards.appendChild(userCard);
-  cards.appendChild(titleH2('Followers'));
+  cards.appendChild(TitleH2('Followers'));
 
   followerCards.forEach((el, index) => {
     cards.appendChild(el)
     if (index == 2)
-      cards.appendChild(titleH2('Your followers are follow by:'));
+      cards.appendChild(TitleH2('Your followers are follow by:'));
   });
 }
 
