@@ -124,4 +124,20 @@ body {
 }
 
 
+.graph-container {
+  width:100%;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 1px 6px -2px #000;
+  padding: 20px;
+  margin-bottom: 20px;
+}
 
+.js-calendar-graph-svg {
+  width: 100%;
+}
+
+.title {
+  font-size: 30px;
+  margin-bottom: 20px;
+}

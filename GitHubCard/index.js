@@ -53,3 +53,131 @@ const followersArray = [];
   luishrd
   bigknell
 */
+const html = String.raw;
+const base_url = 'https://api.github.com/users/danielkanangila';
+const domParser = new DOMParser();
+
+/**
+ * Fetch data from given url
+ * @param url api url
+ * @returns axios response
+ * 
+ */
+async function fetchData(url) {
+  try {
+    return await axios.get(url)
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+/**
+ * Create github card element
+ * 
+ * @param {
+ * login, 
+ * avatar_url, 
+ * name,
+ * location,
+ * html_url
+ * followers,
+ * following,
+ * bio } 
+ * @returns gitHubCard html component 
+ */
+function GitHubCard({login, avatar_url, name, location, html_url, followers, following, bio}) {
+  const template = html`
+    <div class="card">
+      <img src=${avatar_url} />
+      <div class="card-info">
+        <h3 class="name">${name || login}</h3>
+        <p class="username">${login}</p>
+        <p>Location: ${location}</p>
+        <p>Profile:  
+          <a href="${html_url}">${html_url}</a>
+        </p>
+        <p>Followers: ${followers}</p>
+        <p>Following: ${following}</p>
+        <p>Bio: ${bio}</p>
+      </div>
+    </div>
+  `
+  return domParser.parseFromString(template, 'text/html').body.firstChild;
+}
+
+/**
+ * Find  own followers if less than 5 find follower's followers
+ * @param followers_url followers url from api
+ * @returns list of followers
+ * 
+ */
+async function findFriends(followers_url) {
+  const followers = await fetchData(followers_url);
+  const friendsUrl = followers.data.map(data => data.url);
+
+  const friends = []
+
+  for(let i=0; i < friendsUrl.length; i++) {
+    const friend = await fetchData(friendsUrl[i]);
+    friends.push(friend.data)
+  }
+
+  // add follower's followers if own followers are less than 5
+  if (friends.length < 5) {
+    let followersBisUrls = []
+    for (let a=0; a < friends.length; a++) {
+      if (friends[a].followers > 0) {
+        let url = await fetchData(friends[a].followers_url)
+        url = url.data.map(f => f.url);
+        url = url.filter(u => u !== base_url);
+        followersBisUrls.push(url);
+      }
+    }
+
+    followersBisUrls = [].concat.apply([], followersBisUrls);
+    
+    for(let i=0; i < followersBisUrls.length; i++) {
+      const friend = await fetchData(followersBisUrls[i]);
+      friends.push(friend.data)
+    }
+    
+  }
+  
+  return friends;
+}
+
+function TitleH2(title) {
+  return domParser.parseFromString(`<h2 class="title">${title}</h2>`, 'text/html')
+    .body.firstChild;
+}
+
+/**
+ * Add created card to the dom
+ */
+async function addCardsToDOM() {
+  const user = await fetchData(base_url);
+  const friends = await findFriends(user.data.followers_url);
+
+  const userCard = GitHubCard({...user.data});
+
+  const followerCards = [];
+
+  friends.forEach((data, index) => {
+    followerCards.push(GitHubCard({...data}));
+  });
+
+
+  const cards = document.querySelector('.cards');
+  cards.appendChild(userCard);
+  cards.appendChild(TitleH2('Followers'));
+
+  followerCards.forEach((el, index) => {
+    cards.appendChild(el)
+    if (index == 2)
+      cards.appendChild(TitleH2('Your followers are follow by:'));
+  });
+}
+
+
+addCardsToDOM()
+new GitHubCalendar(".graph-container", "danielkanangila");
